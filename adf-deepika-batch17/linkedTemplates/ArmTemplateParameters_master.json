@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-deepika-batch17"
+		},
+		"ls_source_adls_accountKey": {
+			"value": ""
+		},
+		"ls_source_sql_password": {
+			"value": ""
+		},
+		"ls_source_adls_properties_typeProperties_url": {
+			"value": "https://adlsdeepikabronzebatch17.dfs.core.windows.net/"
+		},
+		"ls_source_sql_properties_typeProperties_server": {
+			"value": "deeps-adfbatch17.database.windows.net"
+		},
+		"ls_source_sql_properties_typeProperties_database": {
+			"value": "batch17Dev"
+		},
+		"ls_source_sql_properties_typeProperties_userName": {
+			"value": "deeps.bansal88"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
