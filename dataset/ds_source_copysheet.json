@@ -1,0 +1,32 @@
+{
+	"name": "ds_source_copysheet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_source_adls",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"SheetName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": {
+				"value": "@dataset().SheetName",
+				"type": "Expression"
+			},
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().SheetName",
+					"type": "Expression"
+				},
+				"folderPath": "source",
+				"fileSystem": "source"
+			}
+		},
+		"schema": []
+	}
+}
