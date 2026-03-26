@@ -3203,10 +3203,7 @@
 					},
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().SheetName",
-							"type": "Expression"
-						},
+						"fileName": "Products_Customer.xlsx",
 						"folderPath": "source",
 						"fileSystem": "source"
 					}
