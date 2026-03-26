@@ -1,0 +1,59 @@
+{
+	"name": "ps_sys_variables",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable Pipeline Name",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Pipeline Name",
+					"value": {
+						"value": "@pipeline().Pipeline",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set variable Pipeline Run Id",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set variable Pipeline Name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Pipeline Run Id",
+					"value": {
+						"value": "@pipeline().RunId",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"Pipeline Name": {
+				"type": "String"
+			},
+			"Pipeline Run Id": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-03-12T04:37:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

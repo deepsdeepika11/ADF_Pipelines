@@ -1,0 +1,17 @@
+{
+	"name": "ls_source_sql",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "deeps-adfbatch17.database.windows.net",
+			"database": "batch17Dev",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "deeps.bansal88",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEY5Q0M3RkNFLTQxMjMtNEFBQS05Rjg5LUEwRUMxNUQ1QjdCNl8xYmY5ODZlNC1mZjk4LTRhNTgtOThkOS00YTBkY2I4MTRkYWIiDQp9"
+		}
+	}
+}

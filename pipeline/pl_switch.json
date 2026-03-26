@@ -1,0 +1,90 @@
+{
+	"name": "pl_switch",
+	"properties": {
+		"activities": [
+			{
+				"name": "Switch Cases",
+				"type": "Switch",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@pipeline().parameters.Flag",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "TRUE",
+							"activities": [
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "Copy1File",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true
+									}
+								}
+							]
+						},
+						{
+							"value": "FALSE",
+							"activities": [
+								{
+									"name": "Execute Pipeline2",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_lookup",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true
+									}
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "Execute Pipeline default",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_lookup",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"Flag": {
+				"type": "string",
+				"defaultValue": "TRUE"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-03-14T06:41:04Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,21 @@
+{
+	"name": "adf-deepika-batch17",
+	"properties": {
+		"globalParameters": {
+			"Container": {
+				"type": "string",
+				"value": "gen2container"
+			},
+			"TargetPath": {
+				"type": "string",
+				"value": "target/newFolder"
+			}
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "887bc992-b3be-44fa-9481-daf8532c6c14",
+		"tenantId": "68e79d88-d9d1-41b5-9255-b2eb26c1e8e6"
+	}
+}
