@@ -11,6 +11,9 @@
 		"ls_source_sql_password": {
 			"value": ""
 		},
+		"ls_sql_database_target_password": {
+			"value": ""
+		},
 		"ls_source_adls_properties_typeProperties_url": {
 			"value": "https://adlsdeepikabronzebatch17.dfs.core.windows.net/"
 		},
@@ -21,6 +24,15 @@
 			"value": "batch17Dev"
 		},
 		"ls_source_sql_properties_typeProperties_userName": {
+			"value": "deeps.bansal88"
+		},
+		"ls_sql_database_target_properties_typeProperties_server": {
+			"value": "azuresqbatch17target1.database.windows.net"
+		},
+		"ls_sql_database_target_properties_typeProperties_database": {
+			"value": "azuretargetdb"
+		},
+		"ls_sql_database_target_properties_typeProperties_userName": {
 			"value": "deeps.bansal88"
 		},
 		"containerUri": {
