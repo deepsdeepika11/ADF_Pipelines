@@ -1557,7 +1557,7 @@
 										"source": {
 											"type": "AzureSqlSource",
 											"sqlReaderQuery": {
-												"value": "\nSELECT * \nFROM @{item().tableName} \nWHERE @{item().watermarkcolumn} > '@{formatDateTime(activity('Lookup Old WaterMark Column').output.firstRow.WatermarkValue, 'yyyy-MM-ddTHH:mm:ss')}'\n  AND @{item().watermarkcolumn} <= '@{formatDateTime(activity('Lookup NewWaterMark Column').output.firstRow.NewWaterMarkValue, 'yyyy-MM-ddTHH:mm:ss')}'",
+												"value": "\nSELECT * \nFROM @{item().tableName} \nWHERE @{item().WaterMark_Column} > '@{formatDateTime(activity('Lookup Old WaterMark Column').output.firstRow.WatermarkValue, 'yyyy-MM-ddTHH:mm:ss')}'\n  AND @{item().WaterMark_Column} <= '@{formatDateTime(activity('Lookup NewWaterMark Column').output.firstRow.NewWaterMarkValue, 'yyyy-MM-ddTHH:mm:ss')}'",
 												"type": "Expression"
 											},
 											"queryTimeout": "02:00:00",
@@ -1591,11 +1591,11 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"SchemaName": {
-													"value": "@item().SchemaName",
+													"value": "@item().TableSchemaName",
 													"type": "Expression"
 												},
 												"TableName": {
-													"value": "@item().tableName",
+													"value": "@item().TableName",
 													"type": "Expression"
 												}
 											}
@@ -1607,7 +1607,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"SchemaName": {
-													"value": "@item().SchemaName",
+													"value": "@item().TableSchemaName",
 													"type": "Expression"
 												},
 												"TableName": {
@@ -1617,6 +1617,49 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "Stored procedure",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Copy data",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[dbo].[usp_write_watermark]",
+										"storedProcedureParameters": {
+											"last_updated": {
+												"value": {
+													"value": "@activity('Lookup NewWaterMark Column').output.firstRow.newWaterMarkValue",
+													"type": "Expression"
+												},
+												"type": "DateTime"
+											},
+											"tableName": {
+												"value": {
+													"value": "@item().TableName",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_source_sql",
+										"type": "LinkedServiceReference"
+									}
 								}
 							]
 						}
