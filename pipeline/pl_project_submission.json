@@ -142,7 +142,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(activity('Get Metadata for copied files').output.size, variables('MaxFileSize'))",
+									"value": "@greater(activity('Get Metadata for copied files').output.size, variables('MaxFileSize'))\n",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -182,7 +182,7 @@
 										"typeProperties": {
 											"variableName": "MaxFileSize",
 											"value": {
-												"value": "@activity('Get Metadata for copied files').output.size",
+												"value": "@activity('Get Metadata for copied files').output.size\n",
 												"type": "Expression"
 											}
 										}
@@ -212,10 +212,12 @@
 		},
 		"variables": {
 			"MaxFileName": {
-				"type": "String"
+				"type": "String",
+				"defaultValue": "''"
 			},
 			"MaxFileSize": {
-				"type": "Integer"
+				"type": "Integer",
+				"defaultValue": 0
 			}
 		},
 		"annotations": []
