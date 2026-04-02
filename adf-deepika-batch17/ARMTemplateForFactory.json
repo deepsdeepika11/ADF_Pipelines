@@ -3668,7 +3668,7 @@
 							"value": "@dataset().CSVName",
 							"type": "Expression"
 						},
-						"folderPath": "source",
+						"folderPath": "Source",
 						"fileSystem": "project"
 					},
 					"columnDelimiter": ",",
