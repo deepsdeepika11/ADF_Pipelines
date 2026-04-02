@@ -76,7 +76,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"rows": {
+					"fileName": {
 						"type": "string"
 					}
 				},
@@ -86,7 +86,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@dataset().rows",
+							"value": "@dataset().fileName",
 							"type": "Expression"
 						},
 						"folderPath": "Source",
