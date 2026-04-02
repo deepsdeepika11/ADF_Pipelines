@@ -64,8 +64,12 @@
 									"referenceName": "ds_source_copy_3CSV",
 									"type": "DatasetReference",
 									"parameters": {
-										"CSVName": {
+										"FileName": {
 											"value": "@item().name",
+											"type": "Expression"
+										},
+										"rows": {
+											"value": "@item().rows",
 											"type": "Expression"
 										}
 									}
@@ -76,7 +80,7 @@
 									"referenceName": "ds_target_copy_3CSV",
 									"type": "DatasetReference",
 									"parameters": {
-										"CSVName": {
+										"FileName": {
 											"value": "@item().name",
 											"type": "Expression"
 										}
@@ -94,7 +98,7 @@
 				"defaultValue": {
 					"tables": [
 						{
-							"name": "MARA",
+							"name": "MARA.csv",
 							"rows": [
 								{
 									"ID": "MAT001",
@@ -133,7 +137,7 @@
 							]
 						},
 						{
-							"name": "VBAP",
+							"name": "VBAP.csv",
 							"rows": [
 								{
 									"ID": "ITEM001",
@@ -172,7 +176,7 @@
 							]
 						},
 						{
-							"name": "VBRK",
+							"name": "VBRK.csv",
 							"rows": [
 								{
 									"ID": "BILL001",
