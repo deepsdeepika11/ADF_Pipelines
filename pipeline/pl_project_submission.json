@@ -194,7 +194,7 @@
 				}
 			},
 			{
-				"name": "Copy max file size",
+				"name": "Copy largest from Silver",
 				"type": "Copy",
 				"dependsOn": [
 					{
