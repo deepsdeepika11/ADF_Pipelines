@@ -2550,7 +2550,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@json(pipeline().parameters.csvList).tables",
+								"value": "@pipeline().parameters.csvList.tables",
 								"type": "Expression"
 							},
 							"isSequential": true,
@@ -2605,10 +2605,6 @@
 											"referenceName": "ds_source_copy_3CSV",
 											"type": "DatasetReference",
 											"parameters": {
-												"FileName": {
-													"value": "@item().name",
-													"type": "Expression"
-												},
 												"rows": {
 													"value": "@item().rows",
 													"type": "Expression"
@@ -2638,7 +2634,7 @@
 				},
 				"parameters": {
 					"csvList": {
-						"type": "string",
+						"type": "object",
 						"defaultValue": {
 							"tables": [
 								{
@@ -3775,9 +3771,6 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"FileName": {
-						"type": "string"
-					},
 					"rows": {
 						"type": "string"
 					}
@@ -4406,7 +4399,7 @@
 				},
 				"parameters": {
 					"FileName": {
-						"type": "string"
+						"type": "object"
 					}
 				},
 				"annotations": [],
