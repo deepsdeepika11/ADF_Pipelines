@@ -114,7 +114,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"CSVName": {
+					"FileName": {
 						"type": "string"
 					}
 				},
@@ -124,7 +124,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@dataset().CSVName",
+							"value": "@dataset().FileName",
 							"type": "Expression"
 						},
 						"folderPath": "Target/Silver",
