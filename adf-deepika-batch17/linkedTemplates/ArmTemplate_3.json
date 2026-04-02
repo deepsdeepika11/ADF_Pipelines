@@ -2373,6 +2373,68 @@
 											"type": "DelimitedTextReadSettings"
 										}
 									}
+								},
+								{
+									"name": "If Condition",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get Metadata for copied files",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@greater(activity('Get Metadata for copied files').output.size, variables('MaxFileSize'))",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Set variable -maxFileName",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"policy": {
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "MaxFileName",
+													"value": {
+														"value": "@activity('Get Metadata for copied files').output.itemName",
+														"type": "Expression"
+													}
+												}
+											},
+											{
+												"name": "Set variable maxFileSize",
+												"type": "SetVariable",
+												"dependsOn": [
+													{
+														"activity": "Set variable -maxFileName",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "MaxFileSize",
+													"value": {
+														"value": "@activity('Get Metadata for copied files').output.size",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
 								}
 							]
 						}
@@ -2395,6 +2457,14 @@
 								"fileName": "VBRK.csv"
 							}
 						]
+					}
+				},
+				"variables": {
+					"MaxFileName": {
+						"type": "String"
+					},
+					"MaxFileSize": {
+						"type": "Integer"
 					}
 				},
 				"annotations": []
