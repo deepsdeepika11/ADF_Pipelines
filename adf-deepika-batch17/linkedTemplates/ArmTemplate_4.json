@@ -1427,7 +1427,7 @@
 						}
 					},
 					{
-						"name": "Set variable LatestTable_copy1",
+						"name": "Set variable LatestTable",
 						"type": "SetVariable",
 						"dependsOn": [
 							{
@@ -1451,11 +1451,11 @@
 						}
 					},
 					{
-						"name": "Set variable Latest Table Timestamp_copy1",
+						"name": "Set variable Latest Table Timestamp",
 						"type": "SetVariable",
 						"dependsOn": [
 							{
-								"activity": "Set variable LatestTable_copy1",
+								"activity": "Set variable LatestTable",
 								"dependencyConditions": [
 									"Succeeded"
 								]
