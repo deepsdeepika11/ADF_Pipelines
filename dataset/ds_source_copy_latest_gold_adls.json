@@ -1,0 +1,27 @@
+{
+	"name": "ds_source_copy_latest_gold_adls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_database_target",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"SchemaName": {
+				"type": "string"
+			},
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "silver",
+			"table": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		}
+	}
+}

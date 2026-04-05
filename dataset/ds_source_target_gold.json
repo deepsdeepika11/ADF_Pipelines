@@ -1,0 +1,32 @@
+{
+	"name": "ds_source_target_gold",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_source_adls",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().TableName",
+					"type": "Expression"
+				},
+				"folderPath": "Target/Gold/latestfromSQL",
+				"fileSystem": "project"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
