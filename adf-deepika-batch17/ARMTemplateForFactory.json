@@ -2730,6 +2730,75 @@
 											}
 										]
 									}
+								},
+								{
+									"name": "Copy_full_last_12_days_data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "Select * \nfrom @{item().SchemaName}.@{item().TableName}\nwhere @{item().WaterMark_Column} >= \n'@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"preCopyScript": {
+												"value": "Delete\nfrom @{item().SchemaName}.@{item().TableName}\nwhere @{item().WaterMark_Column} >= '@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+												"type": "Expression"
+											},
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_full_load_last_12_dys",
+											"type": "DatasetReference",
+											"parameters": {
+												"SchemaName": "bronze",
+												"TableName": {
+													"value": "@item().TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_target_full_load_last_12_days",
+											"type": "DatasetReference",
+											"parameters": {
+												"SchemaName": "silver",
+												"TableName": {
+													"value": "@item().TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
 								}
 							]
 						}
@@ -2824,6 +2893,23 @@
 								"fileName": "VBRK.csv"
 							}
 						]
+					},
+					"tableList": {
+						"type": "array",
+						"defaultValue": [
+							{
+								"TableName": "COSTLIST",
+								"WaterMark_Column": "LASTUPDATED_LastModified"
+							},
+							{
+								"TableName": "INVOICE_LINE_ITEM",
+								"WaterMark_Column": "LASTUPDATED_LastModified"
+							},
+							{
+								"TableName": "PRODUCING_STAT_RATIO_DETAIL",
+								"WaterMark_Column": "LASTUPDATED_LastModified"
+							}
+						]
 					}
 				},
 				"variables": {
@@ -2843,7 +2929,9 @@
 				"[concat(variables('factoryId'), '/datasets/ds_target_largestfile')]",
 				"[concat(variables('factoryId'), '/datasets/ds_source_copy_3CSV')]",
 				"[concat(variables('factoryId'), '/datasets/ds_target_copy_3CSV')]",
-				"[concat(variables('factoryId'), '/datasets/ds_getMetaData')]"
+				"[concat(variables('factoryId'), '/datasets/ds_getMetaData')]",
+				"[concat(variables('factoryId'), '/datasets/ds_full_load_last_12_dys')]",
+				"[concat(variables('factoryId'), '/datasets/ds_target_full_load_last_12_days')]"
 			]
 		},
 		{
@@ -3568,6 +3656,38 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_source_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_full_load_last_12_dys')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_source_sql",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "bronze",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_source_sql')]"
 			]
 		},
 		{
@@ -4864,6 +4984,38 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_source_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_target_full_load_last_12_days')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_database_target",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "silver",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_database_target')]"
 			]
 		},
 		{
