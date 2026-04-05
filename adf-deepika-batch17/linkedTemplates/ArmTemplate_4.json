@@ -1445,7 +1445,7 @@
 						"typeProperties": {
 							"variableName": "LatestUpdatedTableName",
 							"value": {
-								"value": "@activity('Lookup for fetching latest table').output.firstRow",
+								"value": "@activity('Lookup for fetching latest table').output.firstRow.TableName",
 								"type": "Expression"
 							}
 						}
@@ -1469,7 +1469,7 @@
 						"typeProperties": {
 							"variableName": "LastUpdatedTimestamp",
 							"value": {
-								"value": "@activity('Lookup for fetching latest table').output.firstRow",
+								"value": "@activity('Lookup for fetching latest table').output.firstRow.MaxUpdate",
 								"type": "Expression"
 							}
 						}
