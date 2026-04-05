@@ -13,6 +13,253 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_getLatestFIle')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_getMetaData1_getlatestFile",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEach",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get Metadata 2",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "ds_getMetaData2",
+											"type": "DatasetReference",
+											"parameters": {
+												"filename": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"itemName",
+											"lastModified"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "DelimitedTextReadSettings"
+										}
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "Get Metadata 2",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@greaterOrEquals(activity('Get Metadata 2').output.lastModified,variables('LastModified'))",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Set variable1",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"policy": {
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "LatestFileName",
+													"value": {
+														"value": "@activity('Get Metadata 2').output.itemName",
+														"type": "Expression"
+													}
+												}
+											},
+											{
+												"name": "Set variable2",
+												"type": "SetVariable",
+												"dependsOn": [
+													{
+														"activity": "Set variable1",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "LastModified",
+													"value": {
+														"value": "@activity('Get Metadata 2').output.lastModified",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "ForEach",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_source_copylatestfile",
+								"type": "DatasetReference",
+								"parameters": {
+									"FileName": {
+										"value": "@variables('LatestFileName')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_target_latestfile",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"LatestFileName": {
+						"type": "String"
+					},
+					"LastModified": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-03-18T17:40:11Z"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_getMetaData')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1175,160 +1422,89 @@
 											}
 										}
 									]
-								},
-								{
-									"name": "Copy data_targetSQL_goldADLS",
-									"type": "Copy",
-									"dependsOn": [
-										{
-											"activity": "Set variable Latest Table Timestamp",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "AzureSqlSource",
-											"sqlReaderQuery": {
-												"value": "SELECT  TOP 1 TableName\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
-												"type": "Expression"
-											},
-											"queryTimeout": "02:00:00",
-											"partitionOption": "None"
-										},
-										"sink": {
-											"type": "DelimitedTextSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ".txt"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "ds_source_latesttable",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "ds_target_copylatestfile",
-											"type": "DatasetReference",
-											"parameters": {
-												"TableName": {
-													"value": "@item().TableName",
-													"type": "Expression"
-												},
-												"SchemaName": "silver"
-											}
-										}
-									]
-								},
-								{
-									"name": "Set variable LatestTable",
-									"type": "SetVariable",
-									"dependsOn": [
-										{
-											"activity": "Lookup for lastest Table and timestamp",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "LatestUpdatedTableName",
-										"value": {
-											"value": "@activity('Lookup for lastest Table and timestamp').output",
-											"type": "Expression"
-										}
-									}
-								},
-								{
-									"name": "Set variable Latest Table Timestamp",
-									"type": "SetVariable",
-									"dependsOn": [
-										{
-											"activity": "Set variable LatestTable",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "LastUpdatedTimestamp",
-										"value": {
-											"value": "@activity('Lookup for lastest Table and timestamp').output",
-											"type": "Expression"
-										}
-									}
-								},
-								{
-									"name": "Lookup for lastest Table and timestamp",
-									"type": "Lookup",
-									"dependsOn": [
-										{
-											"activity": "Copy_last12days_source_targetSQL",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "AzureSqlSource",
-											"sqlReaderQuery": "SELECT  TOP 1 TableName,MaxUpdate\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
-											"queryTimeout": "02:00:00",
-											"partitionOption": "None"
-										},
-										"dataset": {
-											"referenceName": "lookup_latesttable_latesttimestamp",
-											"type": "DatasetReference",
-											"parameters": {}
-										}
-									}
 								}
 							]
+						}
+					},
+					{
+						"name": "Set variable LatestTable_copy1",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Lookup for fetching latest table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "LatestUpdatedTableName",
+							"value": {
+								"value": "@activity('Lookup for fetching latest table').output.firstRow",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Set variable Latest Table Timestamp_copy1",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Set variable LatestTable_copy1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "LastUpdatedTimestamp",
+							"value": {
+								"value": "@activity('Lookup for fetching latest table').output.firstRow",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Lookup for fetching latest table",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "ForEach for Loading SQL Tables",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT  TOP 1 TableName,MaxUpdate\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "lookup_target_latesttable",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
 						}
 					}
 				],
