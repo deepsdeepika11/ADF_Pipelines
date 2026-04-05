@@ -2970,6 +2970,78 @@
 								"parameters": {}
 							}
 						}
+					},
+					{
+						"name": "Copy latest table from target sql to gold adls",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set variable Latest Table Timestamp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_source_copy_latest_gold_adls",
+								"type": "DatasetReference",
+								"parameters": {
+									"SchemaName": "silver",
+									"TableName": {
+										"value": "@variables('LatestUpdatedTableName')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_source_target_gold",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableName": {
+										"value": "@variables('LatestUpdatedTableName')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -3030,6 +3102,8 @@
 				"[concat(variables('factoryId'), '/datasets/ds_source_copy_largestfile')]",
 				"[concat(variables('factoryId'), '/datasets/ds_target_largestfile')]",
 				"[concat(variables('factoryId'), '/datasets/lookup_target_latesttable')]",
+				"[concat(variables('factoryId'), '/datasets/ds_source_copy_latest_gold_adls')]",
+				"[concat(variables('factoryId'), '/datasets/ds_source_target_gold')]",
 				"[concat(variables('factoryId'), '/datasets/ds_source_copy_3CSV')]",
 				"[concat(variables('factoryId'), '/datasets/ds_target_copy_3CSV')]",
 				"[concat(variables('factoryId'), '/datasets/ds_getMetaData')]",
@@ -4230,6 +4304,38 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_source_copy_latest_gold_adls')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_database_target",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "silver",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_database_target')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_source_copy_sql')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4702,6 +4808,43 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_source_sql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_source_target_gold')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_source_adls",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().TableName",
+							"type": "Expression"
+						},
+						"folderPath": "Target/Gold/latestfromSQL",
+						"fileSystem": "project"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_source_adls')]"
 			]
 		},
 		{
