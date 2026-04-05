@@ -265,7 +265,7 @@
 				]
 			},
 			{
-				"name": "ForEach for SQL Load",
+				"name": "ForEach for Loading SQL Tables",
 				"type": "ForEach",
 				"dependsOn": [],
 				"userProperties": [],
@@ -346,40 +346,19 @@
 							]
 						},
 						{
-							"name": "Lookup",
-							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "Copy_full_last_12_days_data",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
 							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
 								"secureOutput": false,
 								"secureInput": false
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "lookup_target_silverlayer",
-									"type": "DatasetReference",
-									"parameters": {
-										"SchemaName": "silver",
-										"TableName": {
-											"value": "@item().TableName",
-											"type": "Expression"
-										}
-									}
+								"variableName": "LatestUpdatedTableName",
+								"value": {
+									"value": "SELECT  TOP 1 TableName\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
+									"type": "Expression"
 								}
 							}
 						}
@@ -428,6 +407,9 @@
 			"MaxFileSize": {
 				"type": "Integer",
 				"defaultValue": 0
+			},
+			"LatestUpdatedTableName": {
+				"type": "String"
 			}
 		},
 		"annotations": []
