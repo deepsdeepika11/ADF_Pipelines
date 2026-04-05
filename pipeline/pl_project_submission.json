@@ -350,7 +350,7 @@
 							"type": "Copy",
 							"dependsOn": [
 								{
-									"activity": "Copy_last12days_source_targetSQL",
+									"activity": "Set variable Latest Table Timestamp",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -414,6 +414,86 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "Set variable LatestTable",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Lookup for lastest Table and timestamp",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "LatestUpdatedTableName",
+								"value": {
+									"value": "@activity('Lookup for lastest Table and timestamp').output",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set variable Latest Table Timestamp",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set variable LatestTable",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "LastUpdatedTimestamp",
+								"value": {
+									"value": "@activity('Lookup for lastest Table and timestamp').output",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Lookup for lastest Table and timestamp",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Copy_last12days_source_targetSQL",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": "SELECT  TOP 1 TableName,MaxUpdate\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "lookup_latesttable_latesttimestamp",
+									"type": "DatasetReference"
+								}
+							}
 						}
 					]
 				}
@@ -462,6 +542,9 @@
 				"defaultValue": 0
 			},
 			"LatestUpdatedTableName": {
+				"type": "String"
+			},
+			"LastUpdatedTimestamp": {
 				"type": "String"
 			}
 		},
