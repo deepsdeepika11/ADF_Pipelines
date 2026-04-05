@@ -189,75 +189,6 @@
 									}
 								]
 							}
-						},
-						{
-							"name": "Copy_full_last_12_days_data",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderQuery": {
-										"value": "Select * \nfrom bronze.@{item().TableName}\nwhere @{item().WaterMark_Column} >= \n'@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
-										"type": "Expression"
-									},
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "AzureSqlSink",
-									"preCopyScript": {
-										"value": "Delete\nfrom silver.@{item().TableName}\nwhere @{item().WaterMark_Column} >= '@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
-										"type": "Expression"
-									},
-									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false,
-									"disableMetricsCollection": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ds_full_load_last_12_dys",
-									"type": "DatasetReference",
-									"parameters": {
-										"SchemaName": "bronze",
-										"TableName": {
-											"value": "@item().TableName",
-											"type": "Expression"
-										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "ds_target_full_load_last_12_days",
-									"type": "DatasetReference",
-									"parameters": {
-										"SchemaName": "silver",
-										"TableName": {
-											"value": "@item().TableName",
-											"type": "Expression"
-										}
-									}
-								}
-							]
 						}
 					]
 				}
@@ -332,6 +263,90 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "ForEach for SQL Load",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.tableList",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy_full_last_12_days_data",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "Select * \nfrom bronze.@{item().TableName}\nwhere @{item().WaterMark_Column} >= \n'@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "Delete\nfrom silver.@{item().TableName}\nwhere @{item().WaterMark_Column} >= '@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_full_load_last_12_dys",
+									"type": "DatasetReference",
+									"parameters": {
+										"SchemaName": "bronze",
+										"TableName": {
+											"value": "@item().TableName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_target_full_load_last_12_days",
+									"type": "DatasetReference",
+									"parameters": {
+										"SchemaName": "silver",
+										"TableName": {
+											"value": "@item().TableName",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
