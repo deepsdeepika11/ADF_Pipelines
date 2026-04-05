@@ -2807,7 +2807,7 @@
 						]
 					},
 					{
-						"name": "ForEach for SQL Load",
+						"name": "ForEach for Loading SQL Tables",
 						"type": "ForEach",
 						"dependsOn": [],
 						"userProperties": [],
@@ -2886,6 +2886,23 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "LatestUpdatedTableName",
+										"value": {
+											"value": "SELECT  TOP 1 TableName\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
@@ -2935,6 +2952,9 @@
 					"MaxFileSize": {
 						"type": "Integer",
 						"defaultValue": 0
+					},
+					"LatestUpdatedTableName": {
+						"type": "String"
 					}
 				},
 				"annotations": []
@@ -3842,6 +3862,24 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_source_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_getMetaData_SQLTables')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_database_target",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_database_target')]"
 			]
 		},
 		{
@@ -5196,6 +5234,38 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/lookup_target_silverlayer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_database_target",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "silver",
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_database_target')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_source_adls')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -5255,6 +5325,50 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger_project')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_project_submission",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Month",
+						"interval": 1,
+						"startTime": "2026-04-05T11:07:00",
+						"timeZone": "India Standard Time",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								12
+							],
+							"monthlyOccurrences": [
+								{
+									"day": "Tuesday",
+									"occurrence": 2
+								}
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_project_submission')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/integrationRuntime')]",
