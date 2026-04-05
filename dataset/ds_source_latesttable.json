@@ -1,0 +1,12 @@
+{
+	"name": "ds_source_latesttable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_database_target",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
