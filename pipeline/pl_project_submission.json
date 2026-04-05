@@ -206,7 +206,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "Select * \nfrom @{item().SchemaName}.@{item().TableName}\nwhere @{item().WaterMark_Column} >= \n'@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+										"value": "Select * \nfrom bronze.@{item().TableName}\nwhere @{item().WaterMark_Column} >= \n'@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -214,7 +214,10 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"preCopyScript": "Delete\nfrom @{item().SchemaName}.@{item().TableName}\nwhere @{item().WaterMark_Column} >= '@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+									"preCopyScript": {
+										"value": "Delete\nfrom silver.@{item().TableName}\nwhere @{item().WaterMark_Column} >= '@{formatDateTime(adddays(utcNow(),-12), 'yyyy-MM-dd')}'",
+										"type": "Expression"
+									},
 									"writeBehavior": "insert",
 									"sqlWriterUseTableLock": false,
 									"disableMetricsCollection": false
