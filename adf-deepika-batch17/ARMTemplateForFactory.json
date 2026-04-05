@@ -2892,7 +2892,7 @@
 									"type": "Copy",
 									"dependsOn": [
 										{
-											"activity": "Copy_last12days_source_targetSQL",
+											"activity": "Set variable Latest Table Timestamp",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -2957,6 +2957,87 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "Set variable LatestTable",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Lookup for lastest Table and timestamp",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "LatestUpdatedTableName",
+										"value": {
+											"value": "@activity('Lookup for lastest Table and timestamp').output",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set variable Latest Table Timestamp",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Set variable LatestTable",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "LastUpdatedTimestamp",
+										"value": {
+											"value": "@activity('Lookup for lastest Table and timestamp').output",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Lookup for lastest Table and timestamp",
+									"type": "Lookup",
+									"dependsOn": [
+										{
+											"activity": "Copy_last12days_source_targetSQL",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": "SELECT  TOP 1 TableName,MaxUpdate\nFROM (\n    SELECT 'COSTLIST' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.COSTLIST\n    UNION ALL\n    SELECT 'INVOICELINEITEM' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.INVOICE_LINE_ITEM\n    UNION ALL\n    SELECT 'PRODUCINGSTTS' AS TableName, MAX(LASTUPDATED_LastModified) AS MaxUpdate FROM silver.PRODUCING_STAT_RATIO_DETAIL\n) AS Combined\nORDER BY MaxUpdate DESC;",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "lookup_latesttable_latesttimestamp",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
 								}
 							]
 						}
@@ -3009,6 +3090,9 @@
 					},
 					"LatestUpdatedTableName": {
 						"type": "String"
+					},
+					"LastUpdatedTimestamp": {
+						"type": "String"
 					}
 				},
 				"annotations": []
@@ -3022,7 +3106,8 @@
 				"[concat(variables('factoryId'), '/datasets/ds_full_load_last_12_dys')]",
 				"[concat(variables('factoryId'), '/datasets/ds_target_full_load_last_12_days')]",
 				"[concat(variables('factoryId'), '/datasets/ds_source_latesttable')]",
-				"[concat(variables('factoryId'), '/datasets/ds_target_copylatestfile')]"
+				"[concat(variables('factoryId'), '/datasets/ds_target_copylatestfile')]",
+				"[concat(variables('factoryId'), '/datasets/lookup_latesttable_latesttimestamp')]"
 			]
 		},
 		{
@@ -5070,6 +5155,10 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().TableName",
+							"type": "Expression"
+						},
 						"folderPath": "Target/Gold/latestfromSQL",
 						"fileSystem": "project"
 					},
@@ -5341,6 +5430,24 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_source_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/lookup_latesttable_latesttimestamp')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_database_target",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_database_target')]"
 			]
 		},
 		{
